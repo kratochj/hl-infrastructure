@@ -1,0 +1,23 @@
+wordpressUsername: admin
+wordpressPasswordSecret: wordpress-secrets
+wordpressEmail: blog@kratochvil.eu
+wordpressFirstName: Admin
+wordpressLastName: User
+wordpressBlogName: My Blog
+
+mariadb:
+  auth:
+    rootPasswordSecret: wordpress-secrets
+    passwordSecret: wordpress-secrets
+    username: wordpress
+    database: wordpress
+
+service:
+  type: LoadBalancer
+
+persistence:
+  enabled: true
+  storageClass: "longhorn"
+  accessModes:
+    - ReadWriteOnce
+  size: 8Gi
