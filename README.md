@@ -8,16 +8,17 @@ This repository contains a Helmfile-based configuration to deploy various compon
 
 1. [Prerequisites](#prerequisites)
 2. [Installation](#installation)
-    - [Setting up a K3s cluster](#setting-up-a-k3s-cluster)
-    - [Installing Helmfile](#installing-helmfile)
-    - [Deploying Helmfile Configuration](#deploying-helmfile-configuration)
+   - [Setting up a K3s cluster](#setting-up-a-k3s-cluster)
+   - [Installing Helmfile](#installing-helmfile)
+   - [Creating Required Secrets](#creating-required-secrets)
+   - [Deploying Helmfile Configuration](#deploying-helmfile-configuration)
 3. [Repositories](#repositories)
 4. [Releases](#releases)
-    - [Longhorn](#longhorn)
-    - [WordPress Blog](#wordpress-blog)
+   - [Longhorn](#longhorn)
+   - [WordPress Blog](#wordpress-blog)
 5. [Hooks](#hooks)
-    - [Cloudflare Operator Setup](#cloudflare-operator-setup)
-    - [Custom Kustomize Resources](#custom-kustomize-resources)
+   - [Cloudflare Operator Setup](#cloudflare-operator-setup)
+   - [Custom Kustomize Resources](#custom-kustomize-resources)
 6. [Cloudflare Secrets](#cloudflare-secrets)
 7. [Cloudflared Overview](#cloudflared-overview)
 8. [Obtaining Cloudflare API Tokens](#obtaining-cloudflare-api-tokens)
@@ -77,24 +78,24 @@ Before you begin, ensure you have the following installed:
 
    Helmfile requires Helm to deploy charts. If you haven't installed Helm yet, follow these steps:
 
-    - For Linux/macOS:
-      ```bash
-      curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-      ```
+   - For Linux/macOS:
+     ```bash
+     curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+     ```
 
-    - For Windows: Download the [Helm binary](https://helm.sh/docs/intro/install/) and follow the installation instructions.
+   - For Windows: Download the [Helm binary](https://helm.sh/docs/intro/install/) and follow the installation instructions.
 
 2. **Install Helmfile**:
 
    You can install Helmfile using a package manager like Homebrew, or by downloading the binary:
 
-    - **Linux/macOS**:
-      ```bash
-      brew install helmfile
-      ```
+   - **Linux/macOS**:
+     ```bash
+     brew install helmfile
+     ```
 
-    - **Manual Installation**:
-      Download the binary from the [Helmfile releases](https://github.com/helmfile/helmfile/releases) page and move it to a directory in your `PATH`.
+   - **Manual Installation**:
+     Download the binary from the [Helmfile releases](https://github.com/helmfile/helmfile/releases) page and move it to a directory in your `PATH`.
 
 3. **Verify Helmfile Installation**:
 
@@ -104,7 +105,52 @@ Before you begin, ensure you have the following installed:
    helmfile --version
    ```
 
+### Creating Required Secrets
+
+Before you deploy Helmfile, you need to create the following secrets for **Cloudflare**, **Longhorn**, and **WordPress** authentication and configuration.
+
+#### Cloudflare Secrets
+
+Run the following command to create the required secrets for the Cloudflare Operator:
+
+```bash
+kubectl -n cloudflare-operator-system create secret generic cloudflare-secrets \
+  --from-literal=CLOUDFLARE_API_TOKEN=***** \
+  --from-literal=CLOUDFLARE_API_KEY=****
+```
+
+- Replace `*****` with your actual **Cloudflare API Token** (used for creating and managing tunnels).
+- Replace `****` with your actual **Cloudflare Global API Key** (used for managing DNS entries and deleting tunnels).
+
+#### Longhorn Authentication Secret
+
+If you want to enable authentication on the Longhorn Dashboard, you will need to create a Kubernetes secret to store the admin password:
+
+```bash
+kubectl -n longhorn-system create secret generic longhorn-credentials \
+  --from-literal=LONGHORN_USERNAME=admin \
+  --from-literal=LONGHORN_PASSWORD=<your-password>
+```
+
+Replace `<your-password>` with your desired admin password for the Longhorn dashboard.
+
+#### WordPress Secrets
+
+You also need to create a secret for WordPress and MariaDB credentials:
+
+```bash
+kubectl create secret generic wordpress-secrets \
+  --from-literal=wordpress-password=**** \
+  --from-literal=mariadb-root-password=**** \
+  --from-literal=mariadb-password=**** \
+  --namespace wordpress-blog
+```
+
+Replace `****` with the appropriate passwords for WordPress and MariaDB.
+
 ### Deploying Helmfile Configuration
+
+Once you have created the required secrets, you can proceed to deploy the Helmfile configuration.
 
 1. Clone the repository:
 
@@ -113,9 +159,7 @@ Before you begin, ensure you have the following installed:
    cd <your-repo-directory>
    ```
 
-2. Ensure you have set up your Cloudflare API secrets (as described in [Cloudflare Secrets](#cloudflare-secrets)).
-
-3. Deploy the Helmfile configuration:
+2. Deploy the Helmfile configuration:
 
    ```bash
    helmfile sync
@@ -232,7 +276,9 @@ Replace `*****` with your actual API token and API key.
 The Cloudflare Operator manages tunnels for services running in Kubernetes, including creating DNS entries for them in Cloudflare and managing the tunnel lifecycle.
 
 - **CLOUDFLARE_API_TOKEN**: Required for creating and managing tunnels.
-- **CLOUDFLARE_API_KEY**: Required for deleting DNS entries and tunnels.
+- **CLOUDFLARE_API_KEY**: Required for
+
+deleting DNS entries and tunnels.
 
 ---
 
@@ -243,21 +289,17 @@ To allow the Cloudflare Operator to interact with the Cloudflare API, you'll nee
 ### How to Get the Tokens
 
 1. **CLOUDFLARE_API_TOKEN**:
-    - Go to **My Profile > API Tokens** in the Cloudflare Dashboard.
-    - Create a new **Custom Token** with the following permissions:
-        - **Account > Cloudflare Tunnel > Edit**: To create new tunnels.
-        - **Account > Account Settings > Read**: To retrieve the `accountId` and `domainId`.
-        - **Zone > DNS > Edit**: To manage DNS entries.
-    - In **Account Resources**, include **All accounts**.
-    - In **Zone Resources**, include **All zones**.
+   - Go to **My Profile > API Tokens** in the Cloudflare Dashboard.
+   - Create a new **Custom Token** with the following permissions:
+      - **Account > Cloudflare Tunnel > Edit**: To create new tunnels.
+      - **Account > Account Settings > Read**: To retrieve the `accountId` and `domainId`.
+      - **Zone > DNS > Edit**: To manage DNS entries.
+   - In **Account Resources**, include **All accounts**.
+   - In **Zone Resources**, include **All zones**.
 
 2. **CLOUDFLARE_API_KEY** (Global API Key):
-    - Go to **My Profile > API Tokens**.
-    - Copy the **Global API Key** from the bottom of the page. This is used to delete DNS entries and tunnels when resources are deleted.
+   - Go to **My Profile > API Tokens**.
+   - Copy the **Global API Key** from the bottom of the page. This is used to delete DNS entries and tunnels when resources are deleted.
 
 These tokens ensure that the operator can both create and delete resources in Cloudflare as needed.
-
----
-
-By following the steps above, you can manage your Kubernetes services using Helmfile, Kustomize, and Cloudflare integration seamlessly.
 
