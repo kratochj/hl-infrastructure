@@ -1,0 +1,10 @@
+apiVersion: networking.cfargotunnel.com/v1alpha1
+kind: TunnelBinding
+metadata:
+  name: calibre-web-cluster-tunnel
+  namespace: calibre-web
+subjects:
+  - name: books-calibre-web
+tunnelRef:
+  kind: ClusterTunnel
+  name: k3s-cluster-tunnel

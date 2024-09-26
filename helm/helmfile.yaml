@@ -5,8 +5,10 @@ repositories:
     url: https://charts.bitnami.com/bitnami
   - name: cloudflare
     url: https://cloudflare.github.io/helm-charts
-#  - name: cowboysysop
-#    url: https://cowboysysop.github.io/charts/
+  - name: cowboysysop
+    url: https://cowboysysop.github.io/charts/
+  - name: k8s-home-lab
+    url: https://k8s-home-lab.github.io/helm-charts/
 
 releases:
   # Distributed storage
@@ -30,17 +32,34 @@ releases:
       command: "kubectl"
       args: ["apply", "-f", "ingress/wordpress-blog.yaml"]
 
-#  - name: whoami
-#    namespace: whoami
-#    chart: cowboysysop/whoami
-#    hooks:
-#      - events: ["postSync"]
-#        showlogs: true
-#        command: "kubectl"
-#        args: ["apply", "-f", "ingress/whoami.yaml"]
+  - name: whoami
+    namespace: whoami
+    chart: cowboysysop/whoami
+    hooks:
+      - events: ["postSync"]
+        showlogs: true
+        command: "kubectl"
+        args: ["apply", "-f", "ingress/whoami.yaml"]
 
-
-
+  - name: books
+    namespace: calibre-web
+    chart: k8s-home-lab/calibre-web
+    values:
+      - env:
+          TZ: "Europe/Prague"
+      - persistence:
+          config:
+            enabled: true
+            storageClass: longhorn
+            size: 1Gi
+            accessMode: ReadWriteOnce
+            mountPath: /config
+          books:
+            enabled: true
+            storageClass: longhorn
+            size: 10Gi
+            accessMode: ReadWriteOnce
+            mountPath: /books
 hooks:
   - events: ["prepare"]
     showlogs: true
