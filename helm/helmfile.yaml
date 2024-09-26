@@ -3,7 +3,8 @@ repositories:
     url: https://charts.longhorn.io
   - name: bitnami
     url: https://charts.bitnami.com/bitnami
-
+  - name: cloudflare
+    url: https://cloudflare.github.io/helm-charts
 
 releases:
   # Distributed storage
@@ -11,11 +12,33 @@ releases:
     namespace: longhorn-system
     chart: longhorn/longhorn
     version: 1.7.1
+
   # Wordpress blog
-  - name: my-wordpress
+  - name: wordpress
     namespace: wordpress-blog
     chart: bitnami/wordpress
     version: 23.1.17
     values:
       - values/wordpress-blog.yaml
+    hooks:
+    - events: ["postSync"]  # Tento hook spustí příkaz po nasazení WordPress chartu
+      showlogs: true
+      command: "kubectl"
+      args: ["apply", "-f", "ingress/wordpress-blog.yaml"]
 
+hooks:
+  - events: ["prepare"]
+    showlogs: true
+    # kubectl apply -k https://github.com/adyanth/cloudflare-operator/config/default
+    command: kubectl
+    args:
+      - apply
+      - -k
+      - https://github.com/adyanth/cloudflare-operator/config/default
+  - events: ["prepare"]
+    showlogs: true
+    command: kubectl
+    args:
+      - apply
+      - -k
+      - ../kustomize
