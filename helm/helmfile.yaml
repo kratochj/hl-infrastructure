@@ -15,7 +15,7 @@ releases:
     chart: longhorn/longhorn
     version: 1.7.1
     values:
-    - values/longhorn.yaml  
+    - values/longhorn.yaml
 
   # Wordpress blog
   - name: wordpress
