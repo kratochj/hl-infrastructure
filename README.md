@@ -276,9 +276,7 @@ Replace `*****` with your actual API token and API key.
 The Cloudflare Operator manages tunnels for services running in Kubernetes, including creating DNS entries for them in Cloudflare and managing the tunnel lifecycle.
 
 - **CLOUDFLARE_API_TOKEN**: Required for creating and managing tunnels.
-- **CLOUDFLARE_API_KEY**: Required for
-
-deleting DNS entries and tunnels.
+- **CLOUDFLARE_API_KEY**: Required for deleting DNS entries and tunnels.
 
 ---
 
