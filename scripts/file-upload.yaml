@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: file-upload-pod
+  namespace: calibre-web
+spec:
+  containers:
+    - name: file-upload
+      image: busybox
+      command: ["/bin/sh", "-c", "sleep 3600"]  # Keeps the pod running for 1 hour
+      volumeMounts:
+        - name: longhorn-storage
+          mountPath: /mnt/longhorn
+  volumes:
+    - name: longhorn-storage
+      persistentVolumeClaim:
+        claimName: books-calibre-web-books
+  restartPolicy: Never
