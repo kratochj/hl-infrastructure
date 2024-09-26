@@ -5,6 +5,8 @@ repositories:
     url: https://charts.bitnami.com/bitnami
   - name: cloudflare
     url: https://cloudflare.github.io/helm-charts
+#  - name: cowboysysop
+#    url: https://cowboysysop.github.io/charts/
 
 releases:
   # Distributed storage
@@ -12,6 +14,8 @@ releases:
     namespace: longhorn-system
     chart: longhorn/longhorn
     version: 1.7.1
+    values:
+    - values/longhorn.yaml  
 
   # Wordpress blog
   - name: wordpress
@@ -21,10 +25,21 @@ releases:
     values:
       - values/wordpress-blog.yaml
     hooks:
-    - events: ["postSync"]  # Tento hook spustí příkaz po nasazení WordPress chartu
+    - events: ["postSync"]
       showlogs: true
       command: "kubectl"
       args: ["apply", "-f", "ingress/wordpress-blog.yaml"]
+
+#  - name: whoami
+#    namespace: whoami
+#    chart: cowboysysop/whoami
+#    hooks:
+#      - events: ["postSync"]
+#        showlogs: true
+#        command: "kubectl"
+#        args: ["apply", "-f", "ingress/whoami.yaml"]
+
+
 
 hooks:
   - events: ["prepare"]

@@ -1,0 +1,7 @@
+defaultSettings:
+  # backupTarget: nfs://<your-nfs-server>/<your-path>  # Example: Configure backup if needed
+  # backupTargetCredentialSecret: ""  # No credentials for NFS
+  authWebhook:
+    enabled: true
+    secret: longhorn-credentials
+    user: admin
