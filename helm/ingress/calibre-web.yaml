@@ -5,6 +5,9 @@ metadata:
   namespace: calibre-web
 subjects:
   - name: books-calibre-web
+    spec:
+      fqdn: books-new.kratochvil.cloud
+
 tunnelRef:
   kind: ClusterTunnel
   name: k3s-cluster-tunnel
